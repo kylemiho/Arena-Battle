@@ -24,7 +24,6 @@ backSound = Audio.loadSound('MenuBack.wav')
 #current 'Cursor Location for main menu'
 cursorMain = 0
 #if up/down keypad is ready for input
-keyReady = True
 
 #SPRITES
 allsprites = pygame.sprite.Group()
@@ -34,22 +33,19 @@ allsprites = pygame.sprite.Group()
 #also returns when ENTER/BACKSPACE is pressed(not held down) as needed for state updates for mainMenuLoop()
 def updateMainCursor(numOptions):
     #ensures that keyReady/cursorMain isnt redefined in this function
-    global keyReady, cursorMain
+    global cursorMain
     currentEvents = pygame.event.get()
     for event in currentEvents:
-        
         #move cursor depending on key pressed
-        if keyReady and event.type == pygame.KEYDOWN:
+        if event.type == pygame.KEYDOWN:
             ##down
             if event.key == pygame.K_DOWN:
-                keyReady = False
                 cursorMain += 1
                 print(cursorMain)
                 Audio.playSound(cursorSound)
                 
             #up
             elif event.key == pygame.K_UP:
-                keyReady = False
                 Audio.playSound(cursorSound)
                 if cursorMain == 0:
                     cursorMain += int(numOptions - 1)    
@@ -68,10 +64,7 @@ def updateMainCursor(numOptions):
                 print('BACKSPACE PRESSED')
                 Audio.playSound(backSound)
                 return 'BACKSPACE'
-            
-        #reset keyready on release of keystroke
-        if (not keyReady) and (event.type == pygame.KEYUP):
-            keyReady = True
+
 
         #quit game if ESC is pressed    
         if event.type == pygame.QUIT or \
@@ -83,6 +76,7 @@ def updateMainCursor(numOptions):
     return ''
 
 MainMainOptions = 3 #SINGLE,MULTI,OPTIONS
+
 #main menu selection text
 def blitTextMain1():
     
@@ -132,19 +126,9 @@ def updateResolution(cursor):
     print('New Resolution:',resolution)
     return
 
-def fightInit():
-    #load fightBackground into stageImage
-    global stageImage
-    stageImage = Fight.loadStageBG(0,resolution)
-    Audio.tavernMusic()
-    #addsprites
-    character1 = Character.spawnPlayer1('Ninja')
-    allsprites.add(character1)
-
-    return
-
 #current state of main menu to determine which screen should be popped up
 mainMenuState = 'MainMain'
+
 def mainMenuLoop():
     global mainMenuState
     global cursorMain
@@ -207,21 +191,34 @@ def charSelectLoop():
                 sys.exit()
     return
 
+def fightInit():
+    global stageImage
+    stageImage = Fight.loadStageBG(0,resolution) #load stageImage
+    Audio.tavernMusic()
+
+    #addsprites
+    character1 = Character.spawnPlayer1('Ninja')
+    allsprites.add(character1)
+
+    return
+
 def fightLoop():
     #BG Image
     screen.blit(stageImage,(0,0))
     
     #TODO check for Keybord input for interactions
-    
+
+
     #check for quit
-    for event in pygame.event.get():
+    events = pygame.event.get()
+    for event in events:
         if event.type == pygame.QUIT or \
             (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 print('Exiting')
                 pygame.display.quit()
                 pygame.quit()
                 sys.exit()
-    allsprites.update() #update sprite images
+    allsprites.update(events) #update sprites with events updated
     allsprites.draw(screen) #draw sprites to screen
     return
     
@@ -232,15 +229,12 @@ def gameInit():
     return
 
 def gameLoop():
-    #refresh events
-    pygame.event.pump()
     if state == 'mainmenu':
         mainMenuLoop()
     elif state == 'charselect':
         charSelectLoop()
     elif state == 'fight':
         fightLoop()
-
     #update background image as needed
-    pygame.display.flip()
+    pygame.display.update()
     return

@@ -1,4 +1,4 @@
-import pygame, Audio, MainMenu,sys, Fight, Character
+import pygame, Audio, MainMenu,sys, Fight, Character, Physics
  
 #state (default is starting main menu)
 #state options: mainmenu, fight
@@ -219,6 +219,7 @@ def fightLoop():
                 pygame.quit()
                 sys.exit()
     allsprites.update(events) #update sprites with events updated
+
     allsprites.draw(screen) #draw sprites to screen
     return
     
